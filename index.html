@@ -57,6 +57,8 @@ label.chk{display:flex;gap:12px;align-items:flex-start;margin-top:16px;font-size
 label.chk input{width:22px;height:22px;accent-color:var(--rose-d);flex:none;margin:0}
 .file{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:14px;border:1.5px dashed var(--gold);border-radius:16px;color:var(--soft);font-size:15px;cursor:pointer}
 .file input{display:none}
+.foot{font-size:12px;color:var(--soft);text-align:center;line-height:1.5;padding-top:14px}
+textarea{resize:none;min-height:84px}
 .priv{font-size:12.5px;color:var(--soft);text-align:center;margin-top:18px;line-height:1.4}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -67,12 +69,14 @@ label.chk input{width:22px;height:22px;accent-color:var(--rose-d);flex:none;marg
 <main id="app">
   <div class="top"><button class="back" id="back" aria-label="Anterior">‹ Anterior</button><div class="bar" id="bar"><i id="fill"></i></div></div>
   <div class="stage" id="stage" aria-live="polite"></div>
+  <footer class="foot">© 2026 Pastelería Le Tulipe · Todos los derechos reservados<br>Experiencia digital desarrollada por Syntavor</footer>
 </main>
 <script>
 /* ===== CONFIGURACIÓN (editar al publicar) ===== */
 const CONFIG={
   whatsapp:"5215510030534",            // número de Le Tulipe con código de país
   instagram:"https://www.instagram.com/pastelerialetulipe?stkn=c3ZpOG82MXQzc3Rh",
+  tiktok:"https://www.tiktok.com/@pastelerialetulipe",   // REVISA que este sea el link real de TikTok de Le Tulipe
   privacyUrl:"",                       // link a tu aviso de privacidad (si va vacío se muestra un texto breve)
   endpoint:"https://script.google.com/macros/s/AKfycbzAnTxMzyPuT6UNULkCcwJnPS7lPIjYldxG6nmsQUQYoIZizgXoZOS2XIcMjYWPbnkf/exec",                         // URL de Google Apps Script / webhook (Sheets, HubSpot, etc.)
   brand:"Le Tulipe"
@@ -81,7 +85,7 @@ const CONFIG={
 /* ===== PREGUNTAS ===== */
 const STEPS=[
  {k:"evento",q:"¿Qué tipo de evento estás planeando?",t:"single",cols:2,other:"Cuéntanos qué evento estás organizando",o:[["👑","XV Años"],["💍","Boda"],["🎂","Cumpleaños"],["🎓","Graduación"],["🕊️","Bautizo / Primera Comunión"],["🏢","Evento corporativo"],["👶","Baby Shower"],["🎉","Otro","other"]]},
- {k:"invitados",q:"¿Para cuántas personas aproximadamente?",t:"single",cols:2,o:[["👥","100-150"],["👥","150-200"],["👥","Más de 200"],["👥","Otro"],["🤔","Aún no lo sé"]]},
+ {k:"invitados",q:"¿Para cuántas personas aproximadamente?",t:"single",cols:2,other:"Escribe el número de personas",num:1,o:[["👥","100-150"],["👥","150-200"],["👥","Más de 200"],["👥","Otro","other"],["🤔","Aún no lo sé"]]},
  {k:"estilo",q:"¿Qué estilo imaginas para tu evento?",t:"single",cols:2,o:[["✨","Elegante"],["🌸","Floral / Romántico"],["🤍","Minimalista"],["🎀","Infantil"],["🌿","Natural"],["🎭","Temático"],["🏢","Corporativo"],["💡","Quiero recomendaciones"]]},
  {k:"paleta",q:"¿Qué colores imaginas?",sub:"Puedes elegir varios.",t:"multi",cols:2,other:"Escribe los colores que tienes en mente",photo:1,o:[["","Neutros",["#f1e6d8","#d9c3a5","#fffaf2"]],["","Rosa / Pasteles",["#f8d9de","#f3c1cc","#fbe9ee"]],["","Azul",["#cfe0f1","#9fbfe0","#eef4fa"]],["","Verde / Natural",["#d4e2cc","#a7c39a","#f1f6ec"]],["","Blanco + Dorado",["#ffffff","#e3c887","#b8955a"]],["","Negro + Dorado",["#2b2b2b","#e3c887","#b8955a"]],["","Multicolor",["#f6b8c4","#f9dd8b","#a9d6e5"]],["🎨","Otra paleta","other"]]},
  {k:"servicio",q:"¿Qué te gustaría incluir en tu evento?",sub:"Puedes elegir varios.",t:"multi",cols:1,o:[["🍰","Mesa de postres completa + Pastel"],["🎂","Pastel"],["🧁","Caja de Postres"],["💡","Quiero que Le Tulipe me recomiende"]]},
@@ -143,8 +147,8 @@ function pick(s,back){
   const showOther=s.other&&s.o.some(([,l,x])=>x==="other"&&isSel(l));
   show(`<h2>${esc(s.q)}</h2>${s.sub?`<p class="sub">${s.sub}</p>`:'<div style="height:12px"></div>'}
   <div class="grid${s.cols===1?" one":""}">${opts}</div>
-  ${s.other?`<input type="text" id="oth" placeholder="${esc(s.other)}" value="${esc(oth)}" style="display:${showOther?"block":"none"}" maxlength="80">`:""}
-  ${s.photo?`<label class="file">📷 Subir foto de inspiración (opcional)<input type="file" id="ph" accept="image/*"></label><div class="hint" id="phn">${A.foto?"✓ "+esc(A.foto):""}</div>`:""}
+  ${s.other?`<input type="text" id="oth" inputmode="${s.num?"numeric":"text"}" placeholder="${esc(s.other)}" value="${esc(oth)}" style="display:${showOther?"block":"none"}" maxlength="80">`:""}
+  ${s.photo?`<textarea id="ph" rows="3" maxlength="300" placeholder="Cuéntanos tu inspiración o pega un link de Pinterest / Instagram (opcional)">${esc(A.inspo||"")}</textarea>`:""}
   ${s.hint?`<p class="hint">${s.hint}</p>`:""}
   ${multi||s.other?`<button class="btn" id="next">Continuar</button>`:""}`,back);
   const nx=$("#next");
@@ -159,8 +163,8 @@ function pick(s,back){
     upd();
     if(!multi&&!isO)setTimeout(()=>next(),260);
   });
-  const o=$("#oth");if(o)o.oninput=()=>{A[s.k+"_otro"]=o.value;upd()};
-  const ph=$("#ph");if(ph)ph.onchange=()=>{const f=ph.files[0];if(f){A.foto=f.name;$("#phn").textContent="✓ "+f.name}};
+  const o=$("#oth");if(o)o.oninput=()=>{if(s.num)o.value=o.value.replace(/\D/g,"");A[s.k+"_otro"]=o.value;upd()};
+  const ph=$("#ph");if(ph)ph.oninput=()=>{A.inspo=ph.value};
   if(nx){nx.onclick=next;upd()}
 }
 function date(s,back){
@@ -177,7 +181,7 @@ function date(s,back){
 }
 function contact(s,back){
   show(`<h2>${s.q}</h2><p class="sub">Solo necesitamos lo básico para escribirte.</p>
-  <input type="text" id="n" placeholder="Nombre *" autocomplete="given-name" value="${esc(A.nombre||"")}" maxlength="60"><div class="err" id="en"></div>
+  <input type="text" id="n" placeholder="Nombre y apellido *" autocomplete="name" value="${esc(A.nombre||"")}" maxlength="60"><div class="err" id="en"></div>
   <input type="tel" id="w" placeholder="WhatsApp *" inputmode="tel" autocomplete="tel" value="${esc(A.whatsapp||"")}" maxlength="20"><div class="err" id="ew"></div>
   <input type="email" id="m" placeholder="Correo electrónico (opcional)" autocomplete="email" value="${esc(A.email||"")}"><div class="err" id="em"></div>
   <input type="text" id="ig" placeholder="Instagram (opcional) @usuario" autocapitalize="none" value="${esc(A.instagram||"")}" maxlength="40">
@@ -191,20 +195,20 @@ const FMT=d=>/^\d{4}-\d{2}-\d{2}$/.test(d||"")?new Date(d+"T12:00:00").toLocaleD
 const normWA=w=>{let d=w.replace(/\D/g,"");if(d.length===13&&d.startsWith("521"))d=d.slice(3);else if(d.length===12&&d.startsWith("52"))d=d.slice(2);return d.length===10?d:null};
 async function post(o){
   if(!CONFIG.endpoint)return null;
-  const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),25000);
   try{const r=await fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(o),signal:c.signal});return await r.json()}catch(e){return null}finally{clearTimeout(t)}
 }
 function retry(){try{const q=JSON.parse(localStorage.getItem("lt_q")||"[]");if(!q.length||!CONFIG.endpoint)return;Promise.all(q.map(l=>post(l).then(r=>r?null:l))).then(rest=>localStorage.setItem("lt_q",JSON.stringify(rest.filter(Boolean))))}catch(e){}}
-function summary(l){return[["Solicitud",l.Folio],["Cliente",l.Nombre],["Evento",l["Tipo de evento"]],["Invitados",l["Número de invitados"]],["Estilo",l.Estilo],["Paleta",l.Paleta],["Servicios",l.Servicios],["Fecha",l["Fecha del evento"]],["Ubicación",l["Ubicación"]],["Presupuesto",l.Presupuesto]].filter(r=>r[1]&&String(r[1]).trim())}
+function summary(l){return[["Solicitud",l.Folio],["Cliente",l.Nombre],["Evento",l["Tipo de evento"]],["Invitados",l["Número de invitados"]],["Estilo",l.Estilo],["Paleta",l.Paleta],["Servicios",l.Servicios],["Fecha",l["Fecha del evento"]],["Ubicación",l["Ubicación"]],["Presupuesto",l.Presupuesto],["Inspiración",l["Imagen de inspiración"]]].filter(r=>r[1]&&String(r[1]).trim())}
 function waMsg(l){
-  const inv=l["Número de invitados"],rows=[["🎉 Evento",l["Tipo de evento"]],["👥 Invitados",/\d/.test(inv||"")?inv+" personas":inv],["✨ Estilo",l.Estilo],["🎨 Paleta",l.Paleta],["🍰 Me interesa",(l.Servicios||"").split(", ").join(" + ")],["📅 Fecha",l["Fecha del evento"]],["📍 Zona",l["Ubicación"]],["💰 Presupuesto aproximado",l.Presupuesto]].filter(r=>r[1]&&String(r[1]).trim()).map(r=>r[0]+": "+r[1]);
+  const inv=l["Número de invitados"],rows=[["🎉 Evento",l["Tipo de evento"]],["👥 Invitados",/\d/.test(inv||"")?inv+" personas":inv],["✨ Estilo",l.Estilo],["🎨 Paleta",l.Paleta],["🍰 Me interesa",(l.Servicios||"").split(", ").join(" + ")],["📅 Fecha",l["Fecha del evento"]],["📍 Zona",l["Ubicación"]],["💰 Presupuesto aproximado",l.Presupuesto],["💭 Inspiración",l["Imagen de inspiración"]]].filter(r=>r[1]&&String(r[1]).trim()).map(r=>r[0]+": "+r[1]);
   return["Hola Le Tulipe ✨","Soy "+l.Nombre+".","Acabo de completar el formulario para solicitar una cotización.","","Mi solicitud es:",l.Folio,"",...rows,"","Me gustaría recibir una propuesta para mi evento.","¡Gracias! ✨"].join("\n");
 }
 async function submit(){
   const v=id=>$("#"+id).value.trim(),set=(id,m)=>{$("#e"+id).textContent=m;const f=$({n:"#n",w:"#w",m:"#m"}[id]||"#c");f&&f.classList.toggle("bad",!!m)};
   let ok=true;
   const n=v("n"),w=v("w"),m=v("m"),wa=normWA(w);
-  if(!n){set("n","Escribe tu nombre.");ok=false}else set("n","");
+  if(n.split(/\s+/).filter(Boolean).length<2){set("n","Escribe tu nombre y apellido.");ok=false}else set("n","");
   if(!wa){set("w","Escribe un WhatsApp válido de 10 dígitos.");ok=false}else set("w","");
   if(m&&!/^\S+@\S+\.\S+$/.test(m)){set("m","Revisa tu correo.");ok=false}else set("m","");
   if(!$("#c").checked){$("#ec").textContent="Necesitamos tu autorización para contactarte.";ok=false}else $("#ec").textContent="";
@@ -218,33 +222,35 @@ async function submit(){
     "Paleta":(A.paleta||[]).map(x=>oth("paleta",x)).join(", "),
     "Servicios":(A.servicio||[]).join(", "),
     "Fecha del evento":FMT(A.fecha),"Ubicación":oth("ubicacion",A.ubicacion),
-    "Presupuesto":A.presupuesto,"Imagen de inspiración":A.foto||"",
+    "Presupuesto":A.presupuesto,"Imagen de inspiración":A.inspo||"",
     "Origen del lead":source(),"Campaña":UTM.utm_campaign||"","Medio":UTM.utm_medium||"",
     "Estado":"Nuevo lead","Tiempo de llenado (s)":t0?Math.round((Date.now()-t0)/1000):""
   };
   l.Resumen=summary(l).map(r=>r[0]+": "+r[1]).join(" | ");
   const res=await post(l);   /* 1) guardar primero; 2) el servidor asigna el folio */
   l.Folio=res&&res.folio||("LT-"+now.getFullYear()+"-"+String(Date.now()).slice(-5));
-  if(CONFIG.endpoint&&!res){try{const q=JSON.parse(localStorage.getItem("lt_q")||"[]");q.push(l);localStorage.setItem("lt_q",JSON.stringify(q))}catch(e){}}
+  if(CONFIG.endpoint&&!res){try{const q=JSON.parse(localStorage.getItem("lt_q")||"[]");q.push(Object.assign({},l,{imagenBase64:""}));localStorage.setItem("lt_q",JSON.stringify(q))}catch(e){}}
   if(!CONFIG.endpoint)console.log("LEAD (configura CONFIG.endpoint para guardarlo)",l);
   done=true;track("form_complete",{lead_id:l.Folio,fill_seconds:l["Tiempo de llenado (s)"]});
   thanks(l);
 }
-function thanks(l){
+async function thanks(l){
+  await cfgP;
   i=STEPS.length+1;
-  show(`${LOGO}<h1>¡Gracias, ${esc(l.Nombre)}! ✨</h1><div class="gold"></div>
+  show(`${LOGO}<h1>¡Gracias, ${esc(l.Nombre.split(" ")[0])}! ✨</h1><div class="gold"></div>
   <p class="sub center" style="margin-bottom:12px">Ya conocemos un poco más sobre tu evento.</p>
   <p class="center" style="margin:0 0 14px">Tu solicitud es: <b style="color:var(--pink2)">${esc(l.Folio)}</b></p>
   <div style="background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:14px 18px;font-size:15px;line-height:1.7">${summary(l).slice(2).map(r=>`<div><span style="color:var(--soft)">${r[0]}:</span> ${esc(r[1])}</div>`).join("")}</div>
   <p class="sub center" style="margin:14px 0 0;font-size:15px">Con esta información podremos preparar una propuesta mucho más cercana a lo que imaginas.</p>
   <p class="center" style="margin:18px 0 0;color:var(--gold);font-weight:500">Último paso</p>
   <p class="sub center" style="margin:2px 0 0;font-size:15px">Envíanos tu solicitud por WhatsApp para comenzar con tu cotización.</p>
-  <a class="btn" id="wa" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(waMsg(l))}" target="_blank" rel="noopener">Solicitar mi cotización por WhatsApp ✨</a>
-  <a class="btn ghost" id="ig" href="${CONFIG.instagram}" target="_blank" rel="noopener">Ver Instagram</a>`);
-  $("#wa").onclick=()=>{track("click_whatsapp",{lead_id:l.Folio});if(CONFIG.endpoint)try{fetch(CONFIG.endpoint,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"whatsapp_iniciado",Folio:l.Folio})})}catch(e){}};
+  ${CONFIG.whatsapp?`<a class="btn" id="wa" href="https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(waMsg(l))}" target="_blank" rel="noopener">Solicitar mi cotización por WhatsApp ✨</a>`:`<p class="hint center">No pudimos cargar el botón de WhatsApp. Recarga la página para intentarlo de nuevo.</p>`}
+  ${CONFIG.instagram?`<a class="btn ghost" id="ig" href="${CONFIG.instagram}" target="_blank" rel="noopener">Ver Instagram</a>`:""}${CONFIG.tiktok?`<a class="btn ghost" id="tt" href="${CONFIG.tiktok}" target="_blank" rel="noopener">Ver TikTok</a>`:""}`);
+  const wb=$("#wa");if(wb)wb.onclick=()=>{track("click_whatsapp",{lead_id:l.Folio});if(CONFIG.endpoint)try{fetch(CONFIG.endpoint,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"whatsapp_iniciado",Folio:l.Folio})})}catch(e){}};
 }
 function next(){go(i+1)}
 $("#back").onclick=()=>{if(i>0&&i<=STEPS.length)go(i-1,true)};
+const cfgP=CONFIG.endpoint?fetch(CONFIG.endpoint+"?action=config").then(x=>x.json()).then(c=>{["whatsapp","instagram","tiktok"].forEach(k=>{if(c[k])CONFIG[k]=c[k]})}).catch(()=>{}):Promise.resolve();
 retry();intro();
 </script>
 </body>
